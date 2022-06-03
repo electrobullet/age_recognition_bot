@@ -5,7 +5,11 @@ import cv2 as cv
 import numpy as np
 from aiogram import Bot, Dispatcher, executor, types
 
-bot = Bot(os.environ.get('AGE_RECOGNITION_BOT_TOKEN'))
+import models
+
+TOKEN = os.environ.get('AGE_RECOGNITION_BOT_TOKEN')
+
+bot = Bot(TOKEN)
 dp = Dispatcher(bot)
 
 
@@ -19,6 +23,12 @@ async def echo(message: types.Message):
     await message.answer('Send me a photo with a face.')
 
 
+@dp.message_handler(content_types=['photo'])
+async def handle_photo(message: types.Message):
+    image = await get_image(message.photo[-1])
+    models.predict_and_answer(image, message.chat.id)
+
+
 async def get_image(photo: types.PhotoSize):
     image_bytes = io.BytesIO()
     await photo.download(destination_file=image_bytes)
@@ -26,11 +36,6 @@ async def get_image(photo: types.PhotoSize):
     image = cv.imdecode(image, cv.IMREAD_COLOR)
     image_bytes.close()
     return image
-
-
-@dp.message_handler(content_types=['photo'])
-async def handle_photo(message: types.Message):
-    cv.imwrite('image.png', await get_image(message.photo[-1]))
 
 
 if __name__ == '__main__':
