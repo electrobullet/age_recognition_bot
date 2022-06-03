@@ -14,7 +14,9 @@ def preprocess_model(model: Model):
 
     ppp.input().tensor().set_layout(Layout('NHWC')).set_element_type(Type.u8)
     ppp.input().model().set_layout(Layout('NCHW'))
-    ppp.output().tensor().set_element_type(Type.f32)
+
+    for i in range(len(model.outputs)):
+        ppp.output(i).tensor().set_element_type(Type.f32)
 
     return ppp.build()
 
@@ -47,13 +49,27 @@ def face_detection_callback(infer_request: InferRequest, data: Dict[str, Any]):
         y_max = int(np.clip(y_max * h, 0, h))
 
         face_crop = data['image'][y_min:y_max, x_min:x_max]
-        _, face_crop_bytes = cv.imencode('.png', face_crop)
+        data['image'] = face_crop
 
-        requests.post(
-            f'https://api.telegram.org/bot{TOKEN}/sendPhoto',
-            {'chat_id': data['chat_id']},
-            files={'photo': face_crop_bytes},
-        )
+        input_tensor = preprocess_image(face_crop, age_gender_model)
+        age_gender_queue.start_async({0: input_tensor}, data)
+
+
+def age_gender_callback(infer_request: InferRequest, data: Dict[str, Any]):
+    age_prediction = infer_request.results[age_gender_model.output('fc3_a')].reshape(1)
+    gender_prediction = infer_request.results[age_gender_model.output('prob')].reshape(2)
+
+    age = age_prediction[0] * 100
+    gender = ['female', 'male'][np.argmax(gender_prediction)]
+
+    caption = f'Age: {age:.2f}\nGender: {gender} ({np.max(gender_prediction) * 100 :.2f}%)'
+    _, image_bytes = cv.imencode('.png', data['image'])
+
+    requests.post(
+        f'https://api.telegram.org/bot{TOKEN}/sendPhoto',
+        {'chat_id': data['chat_id'], 'caption': caption},
+        files={'photo': image_bytes},
+    )
 
 
 core = Core()
@@ -63,6 +79,13 @@ face_detection_model = core.compile_model(preprocess_model(face_detection_model)
 
 face_detection_queue = AsyncInferQueue(face_detection_model, 2)
 face_detection_queue.set_callback(face_detection_callback)
+
+
+age_gender_model = core.read_model('models/age-gender-recognition-retail-0013.xml')
+age_gender_model = core.compile_model(preprocess_model(age_gender_model))
+
+age_gender_queue = AsyncInferQueue(age_gender_model, 2)
+age_gender_queue.set_callback(age_gender_callback)
 
 
 def predict_and_answer(image: np.ndarray, chat_id: int):
