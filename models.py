@@ -43,10 +43,21 @@ def face_detection_callback(infer_request: InferRequest, data: Dict[str, Any]):
     h, w, _ = data['image'].shape
 
     for _, _, confidence, x_min, y_min, x_max, y_max in predictions:
-        x_min = int(np.clip(x_min * w, 0, w))
-        y_min = int(np.clip(y_min * h, 0, h))
-        x_max = int(np.clip(x_max * w, 0, w))
-        y_max = int(np.clip(y_max * h, 0, h))
+        x_min = int(x_min * w)
+        y_min = int(y_min * h)
+        x_max = int(x_max * w)
+        y_max = int(y_max * h)
+
+        face_width = x_max - x_min
+        face_height = y_max - y_min
+        face_pad = abs(face_width - face_height) // 2
+
+        if face_width < face_height:
+            x_min = np.clip(x_min - face_pad, 0, w)
+            x_max = np.clip(x_max + face_pad, 0, w)
+        else:
+            y_min = np.clip(y_min - face_pad, 0, h)
+            y_max = np.clip(y_max + face_pad, 0, h)
 
         face_crop = data['image'][y_min:y_max, x_min:x_max]
         data['image'] = face_crop
@@ -72,6 +83,16 @@ def age_gender_callback(infer_request: InferRequest, data: Dict[str, Any]):
     )
 
 
+def predict_and_answer(image: np.ndarray, chat_id: int):
+    data = {
+        'image': image,
+        'chat_id': chat_id,
+    }
+
+    input_tensor = preprocess_image(image, face_detection_model)
+    face_detection_queue.start_async({0: input_tensor}, data)
+
+
 core = Core()
 
 face_detection_model = core.read_model('models/face-detection-retail-0005.xml')
@@ -86,13 +107,3 @@ age_gender_model = core.compile_model(preprocess_model(age_gender_model))
 
 age_gender_queue = AsyncInferQueue(age_gender_model, 2)
 age_gender_queue.set_callback(age_gender_callback)
-
-
-def predict_and_answer(image: np.ndarray, chat_id: int):
-    data = {
-        'image': image,
-        'chat_id': chat_id,
-    }
-
-    input_tensor = preprocess_image(image, face_detection_model)
-    face_detection_queue.start_async({0: input_tensor}, data)
