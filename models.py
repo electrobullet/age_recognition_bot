@@ -60,10 +60,9 @@ def face_detection_callback(infer_request: InferRequest, data: Dict[str, Any]):
             y_max = np.clip(y_max + face_pad, 0, h)
 
         face_crop = data['image'][y_min:y_max, x_min:x_max]
-        data['image'] = face_crop
 
         input_tensor = preprocess_image(face_crop, age_gender_model)
-        age_gender_queue.start_async({0: input_tensor}, data)
+        age_gender_queue.start_async({0: input_tensor}, {'image': face_crop, 'chat_id': data['chat_id']})
 
 
 def age_gender_callback(infer_request: InferRequest, data: Dict[str, Any]):
@@ -84,13 +83,8 @@ def age_gender_callback(infer_request: InferRequest, data: Dict[str, Any]):
 
 
 def predict_and_answer(image: np.ndarray, chat_id: int):
-    data = {
-        'image': image,
-        'chat_id': chat_id,
-    }
-
     input_tensor = preprocess_image(image, face_detection_model)
-    face_detection_queue.start_async({0: input_tensor}, data)
+    face_detection_queue.start_async({0: input_tensor}, {'image': image, 'chat_id': chat_id})
 
 
 core = Core()
