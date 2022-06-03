@@ -1,5 +1,4 @@
 # age_recognition_bot
-
 Telegram bot for Age and gender recognition powered by aiogram and OpenVINO™.  
 Message processing and image inference is completely asynchronous.  
 
@@ -22,3 +21,8 @@ Message processing and image inference is completely asynchronous.
 ```
 python main.py
 ```
+
+## TODO
+* Add logging.
+* Use webhooks instead of polling.
+* Add an argument parser to set some parameters.
