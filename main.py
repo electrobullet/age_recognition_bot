@@ -13,7 +13,7 @@ TOKEN = os.environ.get('AGE_RECOGNITION_BOT_TOKEN')
 log.basicConfig(
     level=log.INFO,
     format='[%(levelname)s] %(message)s',
-    handlers=[log.FileHandler('log.txt'), log.StreamHandler()],
+    handlers=[log.FileHandler('log.txt', encoding='utf-8'), log.StreamHandler()],
 )
 
 bot = Bot(TOKEN)
