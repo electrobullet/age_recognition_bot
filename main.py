@@ -1,4 +1,5 @@
 import io
+import logging as log
 import os
 
 import cv2 as cv
@@ -8,6 +9,12 @@ from aiogram import Bot, Dispatcher, executor, types
 import models
 
 TOKEN = os.environ.get('AGE_RECOGNITION_BOT_TOKEN')
+
+log.basicConfig(
+    level=log.INFO,
+    format='[%(levelname)s] %(message)s',
+    handlers=[log.FileHandler('log.txt'), log.StreamHandler()],
+)
 
 bot = Bot(TOKEN)
 dp = Dispatcher(bot)
@@ -19,12 +26,14 @@ async def info(message: types.Message):
 
 
 @dp.message_handler()
-async def echo(message: types.Message):
+async def handle_text(message: types.Message):
+    log.info(f'{message.date}, {message.from_user.username}, {message.from_user.full_name}, text = {message.text}')
     await message.answer('Send me a photo with a face.')
 
 
 @dp.message_handler(content_types=['photo'])
 async def handle_photo(message: types.Message):
+    log.info(f'{message.date}, {message.from_user.username}, {message.from_user.full_name}, photo')
     image = await get_image(message.photo[-1])
     models.predict_and_answer(image, message.chat.id)
 

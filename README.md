@@ -23,6 +23,5 @@ python main.py
 ```
 
 ## TODO
-* Add logging.
 * Use webhooks instead of polling.
 * Add an argument parser to set some parameters.
