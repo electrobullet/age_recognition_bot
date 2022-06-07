@@ -28,7 +28,7 @@ def preprocess_image(image: np.ndarray, model: Model):
 
 
 def face_detection_callback(infer_request: InferRequest, data: Dict[str, Any]):
-    confidence = 0.8
+    confidence = 0.6
 
     predictions = infer_request.results[face_detection_model.output()].reshape(-1, 7)
     predictions = predictions[predictions[:, 2] > confidence]
@@ -94,7 +94,6 @@ face_detection_model = core.compile_model(preprocess_model(face_detection_model)
 
 face_detection_queue = AsyncInferQueue(face_detection_model, 2)
 face_detection_queue.set_callback(face_detection_callback)
-
 
 age_gender_model = core.read_model('models/age-gender-recognition-retail-0013.xml')
 age_gender_model = core.compile_model(preprocess_model(age_gender_model))
