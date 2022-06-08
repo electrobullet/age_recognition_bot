@@ -5,9 +5,6 @@ Message processing and image inference is completely asynchronous.
 > At the moment, the bot does not have a permanent hosting, but I run it from time to time.  
 > You can send a message [here](https://t.me/age_recognition_bot). It will be processed as soon as the bot appears on the network.  
 
-## Example
-![example](example.bmp)
-
 ## How to run
 1. Set the environment variable `AGE_RECOGNITION_BOT_TOKEN` containing a telegram bot token.
 
@@ -21,6 +18,9 @@ Message processing and image inference is completely asynchronous.
 ```
 python main.py
 ```
+
+## Example
+![example](example.bmp)
 
 ## TODO
 * Use webhooks instead of polling.
