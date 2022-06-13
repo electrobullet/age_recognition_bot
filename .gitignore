@@ -1,5 +1,6 @@
 venv
 **pycache**
 *.png
-models
+models/*.xml
+models/*.bin
 log.txt

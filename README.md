@@ -8,7 +8,7 @@ Message processing and image inference is completely asynchronous.
 ## How to run
 1. Set the environment variable `AGE_RECOGNITION_BOT_TOKEN` containing a telegram bot token.
 
-2. Download the necessary models from [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repository and place them in the `models` folder.
+2. Download the necessary models from [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repository and place them in the [models](/models/) folder.
 
     * [age-gender-recognition-retail-0013](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/age-gender-recognition-retail-0013)
     
